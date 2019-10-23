@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -444,7 +445,52 @@ namespace RomanizationTest
         }
 
 
-        
+        public List<Tuple<string, string>> RomanizeFull(string input)
+        {
+
+            List<Tuple<string, string>> result = new List<Tuple<string, string>>();
+            List<string> variants = new List<string>();
+            List<List<string>> resultList = new List<List<string>>();
+
+            if (!string.IsNullOrEmpty(input))
+            {
+                input = input.ToLower();
+                List<string> initials = new List<string>();
+                if (_TableRomanizationAlphabet.ContainsKey(input.FirstOrDefault()))
+                    initials = _TableRomanizationAlphabet[input.FirstOrDefault()];
+
+
+                foreach (var item in input)
+                {
+                    if (_TableRomanizationAlphabet.ContainsKey(item))
+                        resultList.Add(_TableRomanizationAlphabet[item]);
+                    else
+                        resultList.Add(new List<string> { item.ToString() });
+
+                }
+                TextInfo ti = new CultureInfo("en-US", false).TextInfo;
+                var productResult = Cartesian.CartesianProduct<string>(resultList);
+                foreach (var s in productResult)
+                {
+                    string toAdd = string.Join("", s);
+                    
+
+
+                    variants.Add(ti.ToTitleCase(toAdd));
+                }
+                for (int i = 0; i < variants.Count; i++)
+                {
+                    for (int j = 0; j < initials.Count; j++)
+                    {
+                        result.Add(new Tuple<string, string>(variants[i], ti.ToTitleCase(initials[j])));
+                    }
+                }
+            }
+
+
+
+            return result;
+        }
 
 
         private void button1_Click(object sender, EventArgs e)
@@ -470,6 +516,18 @@ namespace RomanizationTest
                     listBox1.Items.Add(item);
                 }
                 
+            }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+           var res =  RomanizeFull(textBox1.Text);
+            listView1.Items.Clear();
+            foreach (var item in res)
+            {
+                var itm = new ListViewItem(Text=item.Item2);
+                itm.SubItems.Add(item.Item1);
+                listView1.Items.Add(itm);
             }
         }
     }
